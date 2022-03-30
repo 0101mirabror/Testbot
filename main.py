@@ -14,7 +14,12 @@ from telegram.ext import  (Updater,
                            )
 import logging
 from openpyxl import load_workbook, Workbook
+
+wb = load_workbook('users.xlsx')
+
+work_sheet = wb.active # Get active sheet
  
+owner_id = 640077553
     
 updater = Updater(token="5200114262:AAFO9hhfgCQL1FjQYOxBF0l2iILz5pz16EE")
 logging.basicConfig(level=logging.DEBUG)
@@ -38,13 +43,22 @@ BUTTON = ReplyKeyboardMarkup([["📝 Ro'yxatdan o'tish"]],resize_keyboard=True)
 
 def start_bot(update: Update, context: CallbackContext):
     update.effective_chat.send_action('typing')
-    update.message.reply_text("**************************"\
+    update.message.reply_text("**************************\n"\
                               "**************************")
     update.message.reply_html("Olimpiyadada ishtirok etish uchun <b> Ro'yxatdan o'tish </b> tugmasini bosing.", reply_markup=BUTTON)
     context.user_data['id'] = update.effective_user.id
- 
-    
-         
+
+#admin
+
+def get_user_list(update: Update, context: CallbackContext):
+    # xlsx_file = open( "users.xlsx", 'rb')
+    if update.effective_user.id == owner_id:
+        doc_file = open('users.xlsx', 'rb')
+        chat_id = update.effective_chat.id
+        return context.bot.send_document(chat_id, doc_file)
+
+
+     
 def get_data(update: Update, context: CallbackContext):
     update.effective_chat.send_action('typing')
     update.message.reply_text("F.I.SH. kiriting")
@@ -56,6 +70,8 @@ def get_contact(update: Update, context: CallbackContext):
     context.user_data['ism'] = (update.message.text).split()[1]
     if len((update.message.text).split()) == 3:
         context.user_data['sharif'] = (update.message.text).split()[2]
+    else:
+        context.user_data['sharif'] = ""
     key = ReplyKeyboardMarkup([[KeyboardButton("📱 Telefon raqamni jo'natish", request_contact=True)]],
                                  resize_keyboard=True)
     update.message.reply_text("Tugmani bosib telefon raqamingizni yuboring \nYoki raqamingizni kiriting.", reply_markup=key)
@@ -71,6 +87,10 @@ def get_fullname(update: Update, context: CallbackContext):
     context.chat_data['fullname'] = update.message.text
      
 def main_menu(update: Update, context: CallbackContext):
+    context.user_data['id'] = update.effective_user.id
+    context.user_data['number'] = update.message.text
+    work_sheet.append([f"{context.user_data['familiya']}", f"{context.user_data['ism']}", f"{context.user_data['sharif']}", f"{context.user_data['number']}", f"{context.user_data['id']}"])
+    wb.save('users.xlsx')
     update.message.reply_html("BILIMTESTBOT", reply_markup=ReplyKeyboardMarkup([["🔠 Test Ishlash"], [" ℹ️ Ma'lumot", "👤 Profilim"]], resize_keyboard=True))
 
 def check_fullname(update: Update, context: CallbackContext):
@@ -92,8 +112,9 @@ def check_fullname(update: Update, context: CallbackContext):
 updater.dispatcher.add_handler(CommandHandler('start', start_bot))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("📝 Ro'yxatdan o'tish"), callback=get_data))
 updater.dispatcher.add_handler(MessageHandler( filters=filter_fullname, callback=get_contact))
-updater.dispatcher.add_handler(MessageHandler( filters=Filters.contact, callback=main_menu))
+updater.dispatcher.add_handler(MessageHandler( filters=filter_number, callback=main_menu))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("Location"), callback=get_location))
+updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("admin"), callback=get_user_list))
 
 updater.start_polling()
 updater.idle()
