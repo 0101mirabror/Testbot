@@ -1,4 +1,4 @@
-from gc import callbacks
+
 from telegram import (Update, 
                       Contact,
                       ReplyKeyboardMarkup,
@@ -86,7 +86,7 @@ def get_contact(update: Update, context: CallbackContext):
     key = ReplyKeyboardMarkup([[KeyboardButton("📱 Telefon raqamni jo'natish", request_contact=True)]],
                                  resize_keyboard=True)
     update.message.reply_text("Tugmani bosib telefon raqamingizni yuboring \nYoki raqamingizni kiriting.", reply_markup=key)
- 
+    
  
 def get_location(update: Update, context: CallbackContext):
  
@@ -99,8 +99,10 @@ def get_location(update: Update, context: CallbackContext):
 
    
 def main_menu(update: Update, context: CallbackContext):
+    # update.message.reply_text(update.message.contact.phone_number)
     context.user_data['id'] = update.effective_user.id
     context.user_data['number'] = update.message.text
+    context.user_data['number'] = update.message.contact.phone_number
     work_sheet.append([f"{context.user_data['familiya']}", f"{context.user_data['ism']}", f"{context.user_data['sharif']}", f"{context.user_data['number']}", f"{context.user_data['id']}"])
     wb.save('users.xlsx')
     update.message.reply_html("BILIMTESTBOT", reply_markup=ReplyKeyboardMarkup([["🔠 Test Ishlash"], [" ℹ️ Ma'lumot", "👤 Profilim"]], resize_keyboard=True))
@@ -111,10 +113,11 @@ def main_menu(update: Update, context: CallbackContext):
     
 updater.dispatcher.add_handler(CommandHandler('start', start_bot))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("📝 Ro'yxatdan o'tish"), callback=get_fullname1))
+updater.dispatcher.add_handler(MessageHandler( filters=Filters.contact, callback=main_menu))
 updater.dispatcher.add_handler(MessageHandler( filters=filter_fullname, callback=get_contact))
 updater.dispatcher.add_handler(MessageHandler( filters=filter_number, callback=main_menu))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("Location"), callback=get_location))
-updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("admin"), callback=get_user_list))
+updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("👤 Profilim"), callback=get_user_list))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text, callback=get_fullname2))
 updater.start_polling()
 updater.idle()
