@@ -25,9 +25,9 @@ work_sheet['C1'] = 'Sharifi'
 work_sheet['D1'] = 'Telefon raqami'
 work_sheet['E1'] = 'User_id'
 # owner_id
-owner_id = 640077553
+owner_id = **********
     
-updater = Updater(token="5200114262:AAFO9hhfgCQL1FjQYOxBF0l2iILz5pz16EE")
+updater = Updater(token="***************************")
 logging.basicConfig(level=logging.DEBUG)
 
 class FilterFullname(MessageFilter):
