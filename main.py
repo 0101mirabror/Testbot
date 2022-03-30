@@ -49,10 +49,21 @@ BUTTON = ReplyKeyboardMarkup([["📝 Ro'yxatdan o'tish"]],resize_keyboard=True)
 
 def start_bot(update: Update, context: CallbackContext):
     update.effective_chat.send_action('typing')
-    update.message.reply_text("**************************\n"\
-                              "**************************")
-    update.message.reply_html("Olimpiyadada ishtirok etish uchun <b> Ro'yxatdan o'tish </b> tugmasini bosing.", reply_markup=BUTTON)
-    context.user_data['id'] = update.effective_user.id
+     
+    first_column = work_sheet['E']
+    user_list = []
+    for x in range(len(first_column)): 
+        print(first_column[x].value, type(first_column[x].value))
+        if str(first_column[x].value).isnumeric():
+            user_list.append(int(first_column[x].value))
+    print(user_list)
+    if update.effective_user.id in user_list:
+        update.message.reply_text("Quyidagi menyulardan birini tanlang", reply_markup=ReplyKeyboardMarkup([["🔠 Test Ishlash"], [" ℹ️ Ma'lumot", "👤 Profilim"]], resize_keyboard=True))
+    else:
+        update.message.reply_text("**************************\n"\
+                                 "**************************")
+        update.message.reply_html("Olimpiyadada ishtirok etish uchun <b> Ro'yxatdan o'tish </b> tugmasini bosing.", reply_markup=BUTTON)
+        context.user_data['id'] = update.effective_user.id
 
 #admin
 
@@ -68,12 +79,12 @@ def get_user_list(update: Update, context: CallbackContext):
      
 def get_fullname1(update: Update, context: CallbackContext):
     update.effective_chat.send_action('typing')
-    update.message.reply_text("F.I.SH. kiriting")
+    update.message.reply_text("Familiya, ism, sharifni kiriting")
  
 def get_fullname2(update: Update, context: CallbackContext):
     update.effective_chat.send_action('typing')
 
-    update.message.reply_text("Familiya ism sharifini to'g'ri kiriting")
+    update.message.reply_text("Familiya, ism, sharifni to'g'ri kiriting\n\nMasalan, Aliyev Vali ")
 
 def get_contact(update: Update, context: CallbackContext):
     context.user_data['familiya'] = (update.message.text).split()[0]
@@ -88,21 +99,15 @@ def get_contact(update: Update, context: CallbackContext):
     update.message.reply_text("Tugmani bosib telefon raqamingizni yuboring \nYoki raqamingizni kiriting.", reply_markup=key)
     
  
-def get_location(update: Update, context: CallbackContext):
- 
-    key = ReplyKeyboardMarkup([[KeyboardButton("📍 Joylashgan manzilni jo'natish", request_location=True)]],
-                                 resize_keyboard=True)
-    update.message.reply_text("Manzilni yuborish uchun quyidagi tugmani bosing", reply_markup=key)
-
-
- 
 
    
 def main_menu(update: Update, context: CallbackContext):
     # update.message.reply_text(update.message.contact.phone_number)
     context.user_data['id'] = update.effective_user.id
-    context.user_data['number'] = update.message.text
-    context.user_data['number'] = update.message.contact.phone_number
+    if update.message.text:
+        context.user_data['number'] = update.message.text
+    else:
+        context.user_data['number'] = update.message.contact.phone_number
     work_sheet.append([f"{context.user_data['familiya']}", f"{context.user_data['ism']}", f"{context.user_data['sharif']}", f"{context.user_data['number']}", f"{context.user_data['id']}"])
     wb.save('users.xlsx')
     update.message.reply_html("BILIMTESTBOT", reply_markup=ReplyKeyboardMarkup([["🔠 Test Ishlash"], [" ℹ️ Ma'lumot", "👤 Profilim"]], resize_keyboard=True))
@@ -113,15 +118,28 @@ def main_menu(update: Update, context: CallbackContext):
     
 updater.dispatcher.add_handler(CommandHandler('start', start_bot))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("📝 Ro'yxatdan o'tish"), callback=get_fullname1))
-updater.dispatcher.add_handler(MessageHandler( filters=Filters.contact, callback=main_menu))
+updater.dispatcher.add_handler(MessageHandler( filters=Filters.contact | Filters.text("Quyidagi menyulardan birini tanlang"), callback=main_menu))
 updater.dispatcher.add_handler(MessageHandler( filters=filter_fullname, callback=get_contact))
 updater.dispatcher.add_handler(MessageHandler( filters=filter_number, callback=main_menu))
-updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("Location"), callback=get_location))
+# updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("Location"), callback=get_location))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text("👤 Profilim"), callback=get_user_list))
 updater.dispatcher.add_handler(MessageHandler( filters=Filters.text, callback=get_fullname2))
 updater.start_polling()
 updater.idle()
 
+
+
+
+
+
+# def get_location(update: Update, context: CallbackContext):
+ 
+#     key = ReplyKeyboardMarkup([[KeyboardButton("📍 Joylashgan manzilni jo'natish", request_location=True)]],
+#                                  resize_keyboard=True)
+#     update.message.reply_text("Manzilni yuborish uchun quyidagi tugmani bosing", reply_markup=key)
+
+
+ 
 
 # if update.message.text == '📝 Ro\'yxatdan o\'tish':
 
